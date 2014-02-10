@@ -247,6 +247,7 @@ class PEventListenerDispatcher(PDispatcher):
     RESULT_TOKEN_START = 'RESULT '
     READY_FOR_EVENTS_LEN = len(READY_FOR_EVENTS_TOKEN)
     RESULT_TOKEN_START_LEN = len(RESULT_TOKEN_START)
+    MSG_FORMAT = '%r %s output: \n%s'
 
     def __init__(self, process, channel, fd):
         self.process = process
@@ -258,6 +259,8 @@ class PEventListenerDispatcher(PDispatcher):
         self.resultlen = None
         self.channel = channel
         self.fd = fd
+
+        self.log_msg_format = getattr(process.config, 'log_msg_format', self.MSG_FORMAT)
 
         logfile = getattr(process.config, '%s_logfile' % channel)
 
@@ -297,7 +300,7 @@ class PEventListenerDispatcher(PDispatcher):
         if data:
             self.state_buffer += data
             procname = self.process.config.name
-            msg = '%r %s output:\n%s' % (procname, self.channel, data)
+            msg = self.log_msg_format % (procname, self.channel, data)
             self.process.config.options.logger.debug(msg)
 
             if self.childlog:
